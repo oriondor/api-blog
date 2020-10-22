@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 
- 
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", __file__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
