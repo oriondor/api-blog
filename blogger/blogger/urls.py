@@ -15,7 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from blogger_app_main.views import ShowView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('show/', ShowView.as_view(), name='show-view'),
+
 ]
