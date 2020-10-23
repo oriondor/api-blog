@@ -53,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'blogger_app_main.middleware.MyMiddleware',
 ]
 
 ROOT_URLCONF = 'blogger.urls'
