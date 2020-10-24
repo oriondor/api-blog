@@ -8,19 +8,26 @@ from rest_framework.permissions import IsAuthenticated
 #from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 
+from .models import Blog,Post,Read,Follow
+from django.contrib.auth.models import User 
+
+from django.utils.decorators import method_decorator
+from .decorators import tokin_required
+
 class AllArticlesView(View):
 
 	def get(self, request, *args, **kwargs):
 		data = {"Im here":"That's true"}
 		return JsonResponse(data)
 
-class SubsribedArticlesView(APIView):
-	permission_classes = [IsAuthenticated]
+class SubsribedArticlesView(View):
+	#permission_classes = [IsAuthenticated]
 	#authentication_classes = [TokenAuthentication]
-
+	@method_decorator(tokin_required)
 	def get(self, request, *args, **kwargs):
+		print("User id from request ",request.user.id)
 		data = {"Youre":"Authorized"}
-		return Response(data)
+		return JsonResponse(data)
 
 class AuthView(ObtainAuthToken):
 
