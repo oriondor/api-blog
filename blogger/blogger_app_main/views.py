@@ -1,6 +1,7 @@
 from django.http import HttpResponse,JsonResponse
 from django.views import View
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.http import QueryDict
 
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -38,23 +39,33 @@ class AllArticlesView(View):
 	@method_decorator(ensure_csrf_cookie)
 	def get(self, request, *args, **kwargs):
 		if 'article' in self.kwargs:
-			article = Post.objects.get(pk=self.kwargs['article'])
-			if not article:
-				raise Http404
-			return JsonResponse({
-				'article':{
-					'id':article.id, 
-					'header':article.header,
-					'text':article.text,
-					'date':article.date_created, 
-					'totalR':article.total_read
-				}
-				})
+			try:
+				article = get_object_or_404(Post,pk=self.kwargs['article'])
+				return JsonResponse({
+					'article':{
+						'id':article.id, 
+						'header':article.header,
+						'text':article.text,
+						'date':article.date_created, 
+						'totalR':article.total_read
+					}
+					})
+			except Http404:
+				return JsonResponse({
+					'article':{
+						'id':0, 
+						'header':"404 Page not found",
+						'text':"Requested page deleted or not created yet",
+						'date':0, 
+						'totalR':0
+					}
+					})
+
 		news = Post.objects.order_by('-date_created').all()[0:5]
 		blogs = Blog.objects.order_by('-total_followed').all()
 		data = {
 		'news':[{
-			'id':article.id, 'header':article.header,'text':article.text,'date':article.date_created, 'totalR':article.total_read
+			'id':article.id, 'header':article.header,'text':article.text,'date':article.date_created.strftime('%a, %d %b %Y %H:%M:%S GMT'), 'totalR':article.total_read
 				} for article in news],
 		'blogs':[{
 			'id':blog.id, 'name':blog.name,'totalF':blog.total_followed,'totalP':blog.total_posts
@@ -96,7 +107,7 @@ class SubsribedArticlesView(APIView):
 		blogs = Blog.objects.order_by('-total_followed').all()
 		data = {
 		'news':[{
-			'id':article.id, 'header':article.header,'text':article.text,'date':article.date_created, 'totalR':article.total_read
+			'id':article.id, 'header':article.header,'text':article.text,'date':article.date_created.strftime('%a, %d %b %Y %H:%M:%S GMT'), 'totalR':article.total_read
 				} for article in news],
 		'blogs':[{
 			'id':blog.id, 'name':blog.name,'totalF':blog.total_followed,'totalP':blog.total_posts
