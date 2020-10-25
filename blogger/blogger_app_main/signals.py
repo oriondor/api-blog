@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save,post_delete
+from django.db.models.signals import post_save,post_delete,pre_save
 from django.dispatch import receiver
 
 from .models import Blog,Post,Read,Follow
@@ -8,13 +8,19 @@ from django.db.models import F
 from django.core.mail import send_mail
 
 
+@receiver(pre_save, sender=Follow)
+def check_follows_exist(sender, instance, **kwargs):
+	if Follow.objects.filter(user=instance.user,blog=instance.blog):
+		raise Exception("Already following")
+	print("No follows like this")
+
+
 @receiver(post_save, sender=Follow)
 def increment_follows_counter(sender, instance, created, **kwargs):
 	if created:
 		blog = Blog.objects.get(pk=instance.blog.id)
 		blog.total_followed = F('total_followed')+1
 		blog.save()
-
 
 @receiver(post_delete, sender=Follow)
 def decrement_follows_counter(sender, instance, **kwargs):
@@ -29,12 +35,20 @@ def decrement_follows_counter(sender, instance, **kwargs):
 	reads.delete()
 
 
+@receiver(pre_save, sender=Read)
+def check_read_exist(sender, instance, **kwargs):
+	if Read.objects.filter(user=instance.user,blog=instance.blog,post=instance.post):
+		raise Exception("Already reading")
+	print("No reads like this")
+
+
 @receiver(post_save, sender=Read)
 def increment_read_counter(sender, instance, created, **kwargs):
 	if created:
 		post = Post.objects.get(pk=instance.post.id)
 		post.total_read = F('total_read')+1
 		post.save()
+		
 
 
 @receiver(post_delete, sender=Read)

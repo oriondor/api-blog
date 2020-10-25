@@ -151,20 +151,14 @@ class FollowView(APIView):
 
 	def post(self, request):
 		blog = Blog.objects.get(pk=request.POST.get('blog_id'))
-		try:
-			Follow.objects.get(user=request.user,blog=blog)
-			return Response({
-				'error':"Already following"
-				})
-		except:
-			new_follow = Follow(user=request.user,blog=blog)
-			new_follow.save()
-			return Response({
-				'followed':{
-				'user':new_follow.user.username,
-				'blog':new_follow.blog.name
-				}
-				})
+		new_follow = Follow(user=request.user,blog=blog)
+		new_follow.save()
+		return Response({
+			'followed':{
+			'user':new_follow.user.username,
+			'blog':new_follow.blog.name
+			}
+		})
 
 	def delete(self, request):
 		delete_p = QueryDict(request.body)
@@ -176,7 +170,7 @@ class FollowView(APIView):
 			'user':del_obj.user.username,
 			'blog':del_obj.blog.name
 			}
-			})
+		})
 
 
 
@@ -193,11 +187,11 @@ class ReadView(APIView):
 	def post(self, request):
 		post = Post.objects.get(pk=request.POST.get('post_id'))
 		try:
-			Read.objects.get(user=request.user,blog=post.blog,post=post)
-			return Response({
-				'error':"Already reading"
-				})
+			Follow.objects.get(user=request.user,blog=post.blog)
 		except:
+			new_follow = Follow(user=request.user,blog=post.blog)
+			new_follow.save()
+		finally:
 			new_read = Read(user=request.user,blog=post.blog,post=post)
 			new_read.save()
 			return Response({
@@ -206,7 +200,7 @@ class ReadView(APIView):
 				'blog':new_read.blog.name,
 				'post':new_read.post.header,
 				}
-				})
+			})
 
 	def delete(self, request):
 		delete_p = QueryDict(request.body)
