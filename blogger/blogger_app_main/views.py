@@ -1,5 +1,6 @@
 from django.http import HttpResponse,JsonResponse
 from django.views import View
+from django.http import QueryDict
 
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -9,31 +10,32 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Blog,Post,Read,Follow
-from django.contrib.auth.models import User 
+from django.contrib.auth.models import User
 
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
-from .decorators import tokin_required
-
-from django.core.mail import send_mail
-
-from django.core import serializers
 
 class AllArticlesView(View):
 
 	def get(self, request, *args, **kwargs):
-		#send_mail('subject','message','admin@blogger.com',['vladislav.pikalov@gmail.com'])
 		news = Post.objects.order_by('-date_created').all()[0:5]
-		data = {'news':[{'id':article.id, 'header':article.header,'text':article.text,'date':article.date_created, 'totalR':article.total_read} for article in news]}
+		blogs = Blog.objects.order_by('-total_followed').all()
+		data = {
+		'news':[{'id':article.id, 'header':article.header,'text':article.text,'date':article.date_created, 'totalR':article.total_read} for article in news],
+		'blogs':[{'id':blog.id, 'name':blog.name,'totalF':blog.total_followed,'totalP':blog.total_posts} for blog in blogs],
+		}
 		return JsonResponse(data)
 
-class SubsribedArticlesView(View):
-	#permission_classes = [IsAuthenticated]
+
+class SubsribedArticlesView(APIView):
+	permission_classes = [IsAuthenticated]
 	#authentication_classes = [TokenAuthentication]
-	@method_decorator(tokin_required)
+
 	def get(self, request, *args, **kwargs):
 		print("User id from request ",request.user.id)
 		data = {"Youre":"Authorized"}
-		return JsonResponse(data)
+		return Response(data)
+
 
 class AuthView(ObtainAuthToken):
 
@@ -50,34 +52,80 @@ class AuthView(ObtainAuthToken):
 		return JsonResponse(data)
 
 
-class FollowView(View):
+class FollowView(APIView):
+	permission_classes = [IsAuthenticated]
 	
-	@method_decorator(tokin_required)
+	@method_decorator(ensure_csrf_cookie)
 	def get(self, request):
-		pass
+		follows = Follow.objects.filter(user=request.user)
+		return Response({
+			'follows':[follow.blog.id for follow in follows]
+			})
 
-	@method_decorator(tokin_required)
 	def post(self, request):
-		pass
+		blog = Blog.objects.get(pk=request.POST.get('blog_id'))
+		new_follow = Follow(user=request.user,blog=blog)
+		new_follow.save()
+		return Response({
+			'followed':{
+			'user':new_follow.user.username,
+			'blog':new_follow.blog.name
+			}
+			})
 
-	@method_decorator(tokin_required)
 	def delete(self, request):
-		pass
+		delete_p = QueryDict(request.body)
+		blog = Blog.objects.get(pk=delete_p.get('blog_id'))
+		del_obj = Follow.objects.get(user=request.user,blog=blog)
+		del_obj.delete()
+		return Response({
+			'unfollowed':{
+			'user':del_obj.user.username,
+			'blog':del_obj.blog.name
+			}
+			})
 
 
-class ReadView(View):
+class ReadView(APIView):
+	permission_classes = [IsAuthenticated]
 	
-	@method_decorator(tokin_required)
+	@method_decorator(ensure_csrf_cookie)
 	def get(self, request):
-		pass
+		reads = Read.objects.filter(user=request.user)
+		return Response({
+			'reads':[read.post.id for read in reads]
+			})
 
-	@method_decorator(tokin_required)
 	def post(self, request):
-		pass
+		post = Post.objects.get(pk=request.POST.get('post_id'))
+		new_read = Read(user=request.user,blog=post.blog,post=post)
+		new_read.save()
+		return Response({
+			'reading':{
+			'user':new_read.user.username,
+			'blog':new_read.blog.name,
+			'post':new_read.post.header,
+			}
+			})
 
-	@method_decorator(tokin_required)
 	def delete(self, request):
-		pass
+		delete_p = QueryDict(request.body)
+		post = Post.objects.get(pk=delete_p.get('post_id'))
+		del_obj = Read.objects.get(user=request.user,blog=post.blog, post=post)
+		del_obj.delete()
+		return Response({
+			'unread':{
+			'user':del_obj.user.username,
+			'blog':del_obj.blog.name,
+			'post':del_obj.post.header,
+			}
+			})
+
+
+
+
+
+
 
 
 

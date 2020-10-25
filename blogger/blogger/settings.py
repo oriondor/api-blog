@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'blogger_app_main',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
 ]
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -61,6 +62,10 @@ REST_FRAMEWORK = {
     ],
 }
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsPostCsrfMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -70,6 +75,39 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'blogger_app_main.middleware.MyMiddleware',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://blogger-frontend-node.herokuapp.com",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+]
+CORS_REPLACE_HTTPS_REFERER=True
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://blogger-frontend-node.herokuapp.com",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'POST',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'tokin',
 ]
 
 ROOT_URLCONF = 'blogger.urls'
