@@ -102,12 +102,14 @@ CORS_ALLOW_HEADERS = [
     'accept-encoding',
     'authorization',
     'content-type',
+    'content-length',
     'dnt',
     'origin',
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
     'tokin',
+    'last-modified',
 ]
 
 ROOT_URLCONF = 'blogger.urls'
