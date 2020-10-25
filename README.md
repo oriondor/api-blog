@@ -1,4 +1,4 @@
-#Backend for blog-like service
+# Backend for blog-like service
 
 ----
 Packed into docker
@@ -11,19 +11,19 @@ If you cloned this repo use:
 >after this your app will be available on localhost:8000
 
 ----
-###heroku.yml
+### heroku.yml
 
 
 File configures everything you need to deploy on Heroku
 
 ----
-###requirements.txt
+### requirements.txt
 
 
 Contains all required modules
 
 ---
-###.envs
+### .envs
 .env files are hidden, but you should specify your system variables to work with this project:
 >DEBUG
 >SECRET_KEY
@@ -39,14 +39,14 @@ Contains all required modules
 >EMAIL_PASSWORD
 
 ----
-###Authorization
+### Authorization
 App uses standart Django's token authentication model, you need to send Authorization header into some endpoints to receive content
 
 
 App speaks JSON :) (accept:application/json)
 
 ----
-###Emailing
+### Emailing
 Here we use gmail smpt to send messages about new posts to users, specify your credentials to do this
 
 
